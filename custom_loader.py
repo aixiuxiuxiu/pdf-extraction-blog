@@ -1,9 +1,7 @@
 import pdfplumber
-import pypdf
 import collections
-from pypdf import PdfReader
 from llama_index.core import Document
-from utils import find_footnote_bloc,find_blocs,extract_bloc
+from src.utils import find_footnote_bloc,find_blocs,extract_bloc
 
 class pdf_loader_custom():
 
@@ -99,17 +97,16 @@ class pdf_loader():
 
     def loader(self):
         documents = []
-        reader = PdfReader(self.filename)
-        number_of_pages = len(reader.pages)
-        extract_pages= ""
-        for i in range(number_of_pages):
-            page = reader.pages[i]
-            text = page.extract_text()
-            extract_pages += f"{text}  \n"
-                        
-                        
-        if extract_pages:
-            # Ensure `text=` is used to initialize Document
-            doc = Document(text=extract_pages)
-            documents.append(doc)
+        with pdfplumber.open(self.filename) as pdf:
+            extract_pages= ""
+            num_pages = len(pdf.pages)
+            for i in range(num_pages):
+                page = pdf.pages[i]
+                text = page.extract_text()
+                extract_pages += f"{text}  \n"
+                            
+            if extract_pages:
+                # Ensure `text=` is used to initialize Document
+                doc = Document(text=extract_pages)
+                documents.append(doc)
         return documents
